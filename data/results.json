@@ -1,0 +1,96 @@
+{
+  "submissions": [
+    {
+      "submittedAt": "2026-03-25T07:27:08.307Z",
+      "studentId": "456",
+      "studentName": "นาย สิริวัฒน์ สีแก้ว",
+      "answers": {
+        "q1": "1",
+        "q2": "2",
+        "q3": "3",
+        "q4": "4",
+        "q5": "1",
+        "q6": "2",
+        "q7": "3",
+        "q8": "4",
+        "q9": "1",
+        "q10": "2"
+      },
+      "score": 10,
+      "totalPossible": 10,
+      "percent": 100,
+      "details": [
+        {
+          "questionId": "q1",
+          "chosenOption": "1",
+          "correctOption": "1",
+          "isCorrect": true,
+          "awarded": 1
+        },
+        {
+          "questionId": "q2",
+          "chosenOption": "2",
+          "correctOption": "2",
+          "isCorrect": true,
+          "awarded": 1
+        },
+        {
+          "questionId": "q3",
+          "chosenOption": "3",
+          "correctOption": "3",
+          "isCorrect": true,
+          "awarded": 1
+        },
+        {
+          "questionId": "q4",
+          "chosenOption": "4",
+          "correctOption": "4",
+          "isCorrect": true,
+          "awarded": 1
+        },
+        {
+          "questionId": "q5",
+          "chosenOption": "1",
+          "correctOption": "1",
+          "isCorrect": true,
+          "awarded": 1
+        },
+        {
+          "questionId": "q6",
+          "chosenOption": "2",
+          "correctOption": "2",
+          "isCorrect": true,
+          "awarded": 1
+        },
+        {
+          "questionId": "q7",
+          "chosenOption": "3",
+          "correctOption": "3",
+          "isCorrect": true,
+          "awarded": 1
+        },
+        {
+          "questionId": "q8",
+          "chosenOption": "4",
+          "correctOption": "4",
+          "isCorrect": true,
+          "awarded": 1
+        },
+        {
+          "questionId": "q9",
+          "chosenOption": "1",
+          "correctOption": "1",
+          "isCorrect": true,
+          "awarded": 1
+        },
+        {
+          "questionId": "q10",
+          "chosenOption": "2",
+          "correctOption": "2",
+          "isCorrect": true,
+          "awarded": 1
+        }
+      ]
+    }
+  ]
+}

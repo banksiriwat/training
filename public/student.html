@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>สอบออนไลน์</title>
+  </head>
+  <body class="min-h-screen bg-slate-950 text-slate-100">
+    <div class="mx-auto max-w-4xl p-6">
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold">ระบบสอบออนไลน์</h1>
+        <p id="examMeta" class="text-slate-300 mt-1"></p>
+      </div>
+
+      <form id="studentForm" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm text-slate-300 mb-1">ชื่อ-สกุล</label>
+            <input
+              id="studentName"
+              type="text"
+              class="w-full rounded bg-slate-900 border border-slate-800 px-3 py-2"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-1">เลขประจำตัว</label>
+            <input
+              id="studentId"
+              type="text"
+              class="w-full rounded bg-slate-900 border border-slate-800 px-3 py-2"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <button
+            id="submitBtn"
+            type="submit"
+            class="w-full rounded bg-indigo-500 hover:bg-indigo-400 px-4 py-2 font-semibold"
+          >
+            ส่งคำตอบ
+          </button>
+        </div>
+      </form>
+
+      <div class="mt-6">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-lg font-semibold">ข้อสอบ</h2>
+          <div class="text-sm text-slate-300" id="totalPossible"></div>
+        </div>
+        <div id="questions" class="space-y-5"></div>
+      </div>
+
+      <div id="resultBox" class="mt-6 hidden">
+        <div class="rounded border border-slate-800 bg-slate-900 p-4">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <div class="text-sm text-slate-300">ผลสอบของคุณ</div>
+              <div class="text-3xl font-bold mt-1" id="scoreText">-</div>
+              <div class="text-slate-300 mt-1" id="percentText">-</div>
+            </div>
+            <div class="text-right text-sm text-slate-300">
+              <div id="submittedAtText">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const questionsEl = document.getElementById("questions");
+      const examMetaEl = document.getElementById("examMeta");
+      const totalPossibleEl = document.getElementById("totalPossible");
+
+      const form = document.getElementById("studentForm");
+      const submitBtn = document.getElementById("submitBtn");
+
+      const scoreText = document.getElementById("scoreText");
+      const percentText = document.getElementById("percentText");
+      const submittedAtText = document.getElementById("submittedAtText");
+      const resultBox = document.getElementById("resultBox");
+
+      let examQuestions = [];
+      let examTotalPossible = 0;
+
+      function optionLabel(n) {
+        return ["", "ก", "ข", "ค", "ง"][n] || n;
+      }
+
+      function renderQuestions(questions) {
+        questionsEl.innerHTML = "";
+        questions.forEach((q, idx) => {
+          const block = document.createElement("div");
+          block.className = "rounded border border-slate-800 bg-slate-900 p-4";
+
+          const title = document.createElement("div");
+          title.className = "font-semibold";
+          title.textContent = `โจทย์ที่ ${idx + 1}`;
+
+          const text = document.createElement("div");
+          text.className = "mt-2 text-slate-200";
+          text.textContent = q.text;
+
+          const opts = document.createElement("div");
+          opts.className = "mt-4 space-y-2";
+
+          [1, 2, 3, 4].forEach((optNo) => {
+            const radioId = `ans_${q.id}_${optNo}`;
+            const optionText = q.options[optNo - 1] || "";
+
+            const row = document.createElement("label");
+            row.className =
+              "flex items-start gap-3 rounded border border-slate-800 p-2 cursor-pointer hover:border-indigo-500";
+
+            const input = document.createElement("input");
+            input.type = "radio";
+            input.name = q.id;
+            input.value = String(optNo);
+            input.id = radioId;
+            input.className = "mt-1";
+
+            const span = document.createElement("div");
+            span.innerHTML = `<div class="font-medium">${optionLabel(optNo)}.</div><div class="text-slate-300">${optionText}</div>`;
+
+            row.appendChild(input);
+            row.appendChild(span);
+            opts.appendChild(row);
+          });
+
+          block.appendChild(title);
+          block.appendChild(text);
+          block.appendChild(opts);
+          questionsEl.appendChild(block);
+        });
+      }
+
+      async function loadExam() {
+        const res = await fetch("/api/exam");
+        if (!res.ok) throw new Error("โหลดข้อสอบไม่สำเร็จ");
+        const data = await res.json();
+        examQuestions = data.questions || [];
+        examTotalPossible = data.totalPossible || 0;
+
+        examMetaEl.textContent = data.examName ? `แบบทดสอบ: ${data.examName}` : "";
+        totalPossibleEl.textContent = `คะแนนเต็ม: ${examTotalPossible}`;
+        renderQuestions(examQuestions);
+      }
+
+      function collectAnswers() {
+        const answers = {};
+        examQuestions.forEach((q) => {
+          const selected = document.querySelector(`input[name="${q.id}"]:checked`);
+          answers[q.id] = selected ? selected.value : null;
+        });
+        return answers;
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        submitBtn.disabled = true;
+        resultBox.classList.add("hidden");
+
+        const studentName = document.getElementById("studentName").value;
+        const studentId = document.getElementById("studentId").value;
+        const answers = collectAnswers();
+
+        try {
+          const res = await fetch("/api/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ studentId, studentName, answers }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Submit failed");
+
+          scoreText.textContent = `${data.score} / ${data.totalPossible}`;
+          percentText.textContent = `คิดเป็น ${Number(data.percent || 0).toFixed(2)}%`;
+          submittedAtText.textContent = `ส่งเมื่อ: ${new Date(data.submittedAt).toLocaleString()}`;
+          resultBox.classList.remove("hidden");
+        } catch (err) {
+          alert(err.message || "เกิดข้อผิดพลาด");
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+
+      loadExam().catch((err) => {
+        console.error(err);
+        alert("โหลดข้อสอบไม่สำเร็จ: " + err.message);
+      });
+    </script>
+  </body>
+</html>
+

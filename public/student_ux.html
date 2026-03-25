@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Noto Sans Thai", "ui-sans-serif", "system-ui", "sans-serif"],
+            },
+            boxShadow: {
+              soft: "0 10px 30px rgba(15, 23, 42, 0.08)",
+              lift: "0 18px 45px rgba(15, 23, 42, 0.12)",
+            },
+          },
+        },
+      };
+    </script>
+    <title>สอบออนไลน์</title>
+  </head>
+  <body class="min-h-screen font-sans bg-[radial-gradient(1200px_600px_at_20%_0%,rgba(99,102,241,0.16),transparent_60%),radial-gradient(900px_500px_at_90%_10%,rgba(14,165,233,0.12),transparent_55%),linear-gradient(to_bottom,#f8fafc,#ffffff)] text-slate-900">
+    <div class="mx-auto max-w-4xl p-5 sm:p-6 lg:p-8">
+      <header class="mb-6 sm:mb-7">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-3">
+              <span class="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-indigo-600/10 text-indigo-700 ring-1 ring-indigo-600/15">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true">
+                  <path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20" />
+                  <path d="M8 2h12v20H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+                  <path d="M12 6h5" />
+                  <path d="M12 10h5" />
+                  <path d="M12 14h5" />
+                </svg>
+              </span>
+              ระบบสอบออนไลน์
+            </h1>
+            <p id="examMeta" class="text-sm sm:text-base text-slate-600 mt-2 leading-relaxed"></p>
+          </div>
+          <div class="text-right">
+            <div class="text-xs text-slate-500">คะแนนเต็ม</div>
+            <div id="totalPossible" class="text-xl font-semibold flex items-center justify-end gap-2">
+              <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-700 ring-1 ring-amber-500/15">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true">
+                  <path d="M7 4h10" />
+                  <path d="M8 4v6a4 4 0 0 0 8 0V4" />
+                  <path d="M12 14v7" />
+                  <path d="M9 21h6" />
+                </svg>
+              </span>
+              <span id="totalPossibleText" class="tabular-nums"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 rounded-2xl border border-slate-200/80 bg-white/80 backdrop-blur p-4 sm:p-5 shadow-soft">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1" for="studentName">ชื่อ-สกุล</label>
+              <input
+                id="studentName"
+                type="text"
+                class="w-full rounded-xl bg-white border border-slate-300 px-3.5 py-2.5 text-[15px] outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition"
+                required
+                autocomplete="name"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1" for="studentId">เลขประจำตัว</label>
+              <input
+                id="studentId"
+                type="text"
+                class="w-full rounded-xl bg-white border border-slate-300 px-3.5 py-2.5 text-[15px] outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition"
+                required
+                autocomplete="off"
+              />
+            </div>
+          </div>
+          <div class="mt-3 text-xs sm:text-sm text-slate-500 flex items-start gap-2">
+            <span class="mt-[2px] inline-flex items-center justify-center w-6 h-6 rounded-lg bg-slate-100 text-slate-700 ring-1 ring-slate-200">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true">
+                <path d="M12 18h.01" />
+                <path d="M9.09 9a3 3 0 1 1 5.82 1c0 2-3 2-3 4" />
+                <path d="M12 22a10 10 0 1 0-10-10 10 10 0 0 0 10 10z" />
+              </svg>
+            </span>
+            <div>เลือกคำตอบแล้วกด “ถัดไป” หรือกดเลขโจทย์ด้านขวาเพื่อข้ามไปข้ออื่น</div>
+          </div>
+        </div>
+      </header>
+
+      <section class="rounded-3xl border border-slate-200/80 bg-white/80 backdrop-blur p-4 sm:p-5 shadow-soft">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <div class="text-sm text-slate-600 flex items-center gap-2">
+              <span class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-indigo-600/10 text-indigo-700 ring-1 ring-indigo-600/15">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true">
+                  <path d="M12 2l2.5 7H22l-6 4.3L18.5 22 12 17.7 5.5 22 8 13.3 2 9h7.5L12 2z" />
+                </svg>
+              </span>
+              โจทย์
+            </div>
+            <div id="qIndexText" class="text-lg sm:text-xl font-semibold mt-1">-</div>
+          </div>
+          <div class="w-full md:w-64">
+            <div class="flex items-center justify-between text-xs text-slate-600 mb-2">
+              <span id="answeredText">-</span>
+              <span id="progressText">-</span>
+            </div>
+            <div class="h-2.5 rounded-full bg-slate-100 overflow-hidden ring-1 ring-slate-200">
+              <div id="progressBar" class="h-full w-0 bg-gradient-to-r from-indigo-600 to-sky-500 transition-all"></div>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-1.5" id="statusDots" aria-label="สถานะคำตอบ"></div>
+          </div>
+        </div>
+
+        <div class="mt-5">
+          <div id="questionCard" class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-soft">
+            <div class="text-sm text-slate-600 mb-2">กำลังโหลดข้อสอบ...</div>
+          </div>
+        </div>
+
+        <div class="mt-5 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+          <div class="flex gap-2">
+            <button
+              id="prevBtn"
+              type="button"
+              class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:shadow-soft disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              ก่อนหน้า
+            </button>
+            <button
+              id="nextBtn"
+              type="button"
+              class="rounded-xl border border-indigo-200 bg-indigo-600/10 px-4 py-2.5 text-sm font-semibold text-indigo-700 hover:bg-indigo-600/15 hover:shadow-soft disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              ถัดไป
+            </button>
+          </div>
+
+          <div class="flex gap-2 sm:justify-end">
+            <button
+              id="submitBtn"
+              type="submit"
+              form="studentForm"
+              class="rounded-xl bg-gradient-to-r from-indigo-600 to-sky-500 hover:from-indigo-500 hover:to-sky-400 px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:shadow-lift disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              ส่งคำตอบทั้งหมด
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Popup score modal -->
+      <div id="scoreModal" class="fixed inset-0 hidden items-center justify-center bg-slate-950/40 p-4">
+        <div class="w-full max-w-md rounded-3xl bg-white border border-slate-200 shadow-lift">
+          <div class="p-6">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="flex items-center gap-2 text-sm text-slate-500">
+                  <span class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-700 ring-1 ring-emerald-500/15">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true">
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  </span>
+                  ผลสอบของคุณ
+                </div>
+                <div class="text-3xl font-bold mt-2 tabular-nums" id="scoreText">-</div>
+                <div class="text-slate-600 mt-1" id="percentText">-</div>
+                <div class="text-sm text-slate-500 mt-2" id="submittedAtText">-</div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs text-slate-500">คุณตอบแล้ว</div>
+                <div class="text-lg font-semibold tabular-nums" id="answeredCountText">-</div>
+              </div>
+            </div>
+
+            <div class="mt-6 flex items-center justify-end">
+              <button
+                id="closeModalBtn"
+                type="button"
+                class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+              >
+                ปิด
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <form id="studentForm" class="hidden"></form>
+
+    <script>
+      const examMetaEl = document.getElementById("examMeta");
+      const totalPossibleEl = document.getElementById("totalPossible");
+      const totalPossibleTextEl = document.getElementById("totalPossibleText");
+      const qIndexText = document.getElementById("qIndexText");
+      const answeredText = document.getElementById("answeredText");
+      const progressText = document.getElementById("progressText");
+      const progressBar = document.getElementById("progressBar");
+      const statusDotsEl = document.getElementById("statusDots");
+      const questionCard = document.getElementById("questionCard");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const scoreModal = document.getElementById("scoreModal");
+      const closeModalBtn = document.getElementById("closeModalBtn");
+      const scoreText = document.getElementById("scoreText");
+      const percentText = document.getElementById("percentText");
+      const submittedAtText = document.getElementById("submittedAtText");
+      const answeredCountText = document.getElementById("answeredCountText");
+
+      const studentNameEl = document.getElementById("studentName");
+      const studentIdEl = document.getElementById("studentId");
+      const submitBtn = document.getElementById("submitBtn");
+
+      let examQuestions = [];
+      let examTotalPossible = 0;
+      let currentIndex = 0;
+      const answersMap = {}; // questionId -> "1".."4" | undefined
+
+      function optionLabel(n) {
+        return ["", "ก", "ข", "ค", "ง"][n] || n;
+      }
+
+      function getAnsweredCount() {
+        return Object.values(answersMap).filter((v) => v !== undefined && v !== null && v !== "").length;
+      }
+
+      function setProgress() {
+        const answeredCount = getAnsweredCount();
+        answeredText.textContent = `ตอบแล้ว ${answeredCount} / ${examQuestions.length}`;
+        answeredCountText.textContent = `${answeredCount} ข้อ`;
+
+        const answeredRatio = examQuestions.length ? answeredCount / examQuestions.length : 0;
+        progressBar.style.width = `${Math.round(answeredRatio * 100)}%`;
+        progressText.textContent = `${Math.round(answeredRatio * 100)}% (ตอบแล้ว)`;
+      }
+
+      function renderDots() {
+        const len = examQuestions.length;
+        statusDotsEl.innerHTML = "";
+        for (let i = 0; i < len; i++) {
+          const q = examQuestions[i];
+          const answered = answersMap[q.id] !== undefined;
+          const isCurrent = i === currentIndex;
+
+          const dot = document.createElement("button");
+          dot.type = "button";
+          dot.title = `โจทย์ที่ ${i + 1}`;
+          dot.className =
+            "w-8 h-8 rounded-xl border transition-colors flex items-center justify-center text-xs font-semibold shadow-sm " +
+            (isCurrent
+              ? "border-indigo-500 bg-indigo-100 text-indigo-700"
+              : answered
+                ? "border-emerald-500/40 bg-emerald-50 text-emerald-700"
+                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50");
+          dot.textContent = i + 1;
+          dot.addEventListener("click", () => {
+            currentIndex = i;
+            renderQuestion();
+          });
+          statusDotsEl.appendChild(dot);
+        }
+      }
+
+      function renderQuestion() {
+        if (!examQuestions.length) return;
+
+        const q = examQuestions[currentIndex];
+        qIndexText.textContent = `โจทย์ที่ ${currentIndex + 1} / ${examQuestions.length}`;
+
+        const chosen = answersMap[q.id] ?? null;
+
+        const opts = [1, 2, 3, 4]
+          .map((optNo) => {
+            const optionText = q.options[optNo - 1] || "";
+            const id = `opt_${q.id}_${optNo}`;
+            const checked = String(chosen) === String(optNo);
+
+            return `
+              <label for="${id}" class="block">
+                <input
+                  id="${id}"
+                  type="radio"
+                  name="${q.id}"
+                  value="${optNo}"
+                  class="peer hidden"
+                  ${checked ? "checked" : ""}
+                  data-opt-no="${optNo}"
+                />
+                <div class="mt-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 cursor-pointer hover:border-indigo-300 hover:shadow-soft transition
+                  peer-checked:border-indigo-500 peer-checked:ring-4 peer-checked:ring-indigo-500/10 peer-checked:bg-[linear-gradient(180deg,rgba(99,102,241,0.06),rgba(14,165,233,0.04))]">
+                  <div class="flex items-start gap-3">
+                    <div class="min-w-10">
+                      <div class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-indigo-600/10 text-indigo-700 ring-1 ring-indigo-600/15">
+                        <span class="text-sm font-bold">${optionLabel(optNo)}</span>
+                      </div>
+                    </div>
+                    <div class="flex-1 text-slate-800 text-[15px] leading-relaxed">${escapeHtml(optionText)}</div>
+                  </div>
+                </div>
+              </label>
+            `;
+          })
+          .join("");
+
+        questionCard.innerHTML = `
+          <div class="text-slate-900 text-[17px] sm:text-lg leading-relaxed font-semibold">${escapeHtml(q.text)}</div>
+          <div class="mt-3 text-sm text-slate-600">เลือกคำตอบ 1 ตัวเลือก</div>
+          <div class="mt-2">${opts}</div>
+        `;
+
+        // ผูก event หลัง render (ใช้ querySelector ทุกครั้งเพื่อความง่าย)
+        questionCard.querySelectorAll('input[type="radio"]').forEach((el) => {
+          el.addEventListener("change", (ev) => {
+            const optNo = ev.target.value;
+            answersMap[q.id] = optNo;
+            setProgress();
+            renderDots();
+          });
+        });
+
+        prevBtn.disabled = currentIndex === 0;
+        nextBtn.disabled = currentIndex >= examQuestions.length - 1;
+      }
+
+      function openScoreModal() {
+        // ให้ modal อยู่กลางจอแน่นอนด้วย flex
+        scoreModal.classList.remove("hidden");
+        scoreModal.classList.add("flex");
+      }
+
+      function hideScoreModal() {
+        scoreModal.classList.add("hidden");
+        scoreModal.classList.remove("flex");
+      }
+
+      function resetExamState() {
+        // เคลียร์ข้อมูลการสอบ เพื่อให้ส่งใหม่ได้
+        for (const k of Object.keys(answersMap)) delete answersMap[k];
+        currentIndex = 0;
+
+        // เคลียร์ผลคะแนนใน modal
+        scoreText.textContent = "-";
+        percentText.textContent = "-";
+        submittedAtText.textContent = "-";
+
+        // เคลียร์ข้อมูลผู้เข้าสอบ (ตามที่ขอให้เคลียร์ข้อมูล)
+        studentNameEl.value = "";
+        studentIdEl.value = "";
+
+        setProgress();
+        renderDots();
+        renderQuestion();
+      }
+
+      function escapeHtml(s) {
+        return String(s ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      async function loadExam() {
+        const res = await fetch("/api/exam");
+        if (!res.ok) throw new Error("โหลดข้อสอบไม่สำเร็จ");
+        const data = await res.json();
+
+        examQuestions = data.questions || [];
+        examTotalPossible = data.totalPossible || 0;
+
+        examMetaEl.textContent = data.examName ? `แบบทดสอบ: ${data.examName}` : "";
+        if (totalPossibleTextEl) totalPossibleTextEl.textContent = `${examTotalPossible}`;
+
+        setProgress();
+        renderDots();
+        renderQuestion();
+      }
+
+      function ensureStudentInfo() {
+        const studentName = studentNameEl.value.trim();
+        const studentId = studentIdEl.value.trim();
+        if (!studentName) {
+          alert("กรุณาใส่ชื่อ-สกุล");
+          return null;
+        }
+        if (!studentId) {
+          alert("กรุณาใส่เลขประจำตัว");
+          return null;
+        }
+        return { studentName, studentId };
+      }
+
+      nextBtn.addEventListener("click", () => {
+        if (currentIndex < examQuestions.length - 1) {
+          currentIndex++;
+          renderQuestion();
+        }
+      });
+
+      prevBtn.addEventListener("click", () => {
+        if (currentIndex > 0) {
+          currentIndex--;
+          renderQuestion();
+        }
+      });
+
+      // submit (final)
+      submitBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const info = ensureStudentInfo();
+        if (!info) return;
+        submitBtn.disabled = true;
+        hideScoreModal();
+        try {
+          // เตรียม answers: ครบทุกข้อ (ถ้ายังไม่ตอบให้เป็น null)
+          const answers = {};
+          for (const q of examQuestions) {
+            answers[q.id] = answersMap[q.id] ?? null;
+          }
+
+          const res = await fetch("/api/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              studentId: info.studentId,
+              studentName: info.studentName,
+              answers,
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Submit failed");
+
+          scoreText.textContent = `${data.score} / ${data.totalPossible}`;
+          percentText.textContent = `คิดเป็น ${Number(data.percent || 0).toFixed(2)}%`;
+          submittedAtText.textContent = `ส่งเมื่อ: ${new Date(data.submittedAt).toLocaleString()}`;
+
+          setProgress();
+          openScoreModal();
+        } catch (err) {
+          alert(err.message || "เกิดข้อผิดพลาด");
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+
+      // close popup
+      closeModalBtn.addEventListener("click", () => {
+        hideScoreModal();
+        resetExamState();
+      });
+
+      // close when click overlay
+      scoreModal.addEventListener("click", (e) => {
+        if (e.target === scoreModal) {
+          hideScoreModal();
+          resetExamState();
+        }
+      });
+
+      loadExam().catch((err) => {
+        console.error(err);
+        questionCard.innerHTML = `<div class="text-red-600 text-sm">${escapeHtml(err.message || "โหลดข้อสอบไม่สำเร็จ")}</div>`;
+      });
+    </script>
+  </body>
+</html>
+

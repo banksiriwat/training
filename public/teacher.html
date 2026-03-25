@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>ครูดูคะแนน</title>
+  </head>
+  <body class="min-h-screen bg-slate-100 text-slate-900">
+    <div class="mx-auto max-w-5xl p-6">
+      <div class="mb-5">
+        <h1 class="text-2xl font-bold">ครูดูคะแนน</h1>
+        <p class="text-slate-600 mt-1 text-sm">
+          ต้องใส่ PIN เพื่อเรียกดูผลสอบ (ค่า PIN ตั้งจากตัวแปร `TEACHER_PIN` ในเครื่องที่รัน Node)
+        </p>
+      </div>
+
+      <div class="rounded border border-slate-200 bg-white p-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+          <div class="md:col-span-2">
+            <label class="block text-sm text-slate-600 mb-1">Teacher PIN</label>
+            <input
+              id="pin"
+              type="password"
+              class="w-full rounded border border-slate-300 px-3 py-2"
+              placeholder="ค่าเริ่มต้นมักเป็น 1234"
+            />
+          </div>
+          <div>
+            <button
+              id="loadBtn"
+              class="w-full rounded bg-indigo-500 hover:bg-indigo-400 px-4 py-2 font-semibold text-white"
+            >
+              ดึงคะแนน
+            </button>
+          </div>
+        </div>
+        <div class="mt-3 flex flex-col md:flex-row gap-2 md:items-center md:justify-between">
+          <div class="text-xs text-slate-500">
+            ลบรายคนจะอ้างอิงจาก “เวลา + เลขประจำตัว” ของรายการนั้น
+          </div>
+          <button
+            id="clearAllBtn"
+            class="rounded border border-red-200 bg-red-50 hover:bg-red-100 px-3 py-2 text-sm font-semibold text-red-700"
+            type="button"
+          >
+            เคลียร์คะแนนทั้งหมด
+          </button>
+        </div>
+
+        <div id="errorBox" class="hidden mt-3 text-sm text-red-700"></div>
+      </div>
+
+      <div class="mt-5">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-lg font-semibold">รายการผลสอบ</h2>
+          <div id="countText" class="text-sm text-slate-600"></div>
+        </div>
+        <div class="overflow-auto rounded border border-slate-200 bg-white">
+          <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 sticky top-0">
+              <tr class="text-left">
+                <th class="p-3">#</th>
+                <th class="p-3">นักเรียน</th>
+                <th class="p-3">เลขประจำตัว</th>
+                <th class="p-3">คะแนน</th>
+                <th class="p-3">คิดเป็น</th>
+                <th class="p-3">เวลา</th>
+                <th class="p-3"></th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const loadBtn = document.getElementById("loadBtn");
+      const pinEl = document.getElementById("pin");
+      const rowsEl = document.getElementById("rows");
+      const errorBox = document.getElementById("errorBox");
+      const countText = document.getElementById("countText");
+      const clearAllBtn = document.getElementById("clearAllBtn");
+
+      function setError(msg) {
+        errorBox.textContent = msg;
+        errorBox.classList.remove("hidden");
+      }
+
+      function clearError() {
+        errorBox.textContent = "";
+        errorBox.classList.add("hidden");
+      }
+
+      function esc(s) {
+        return String(s ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      async function loadResults() {
+        clearError();
+        const pin = pinEl.value;
+        if (!pin) return setError("กรุณาใส่ PIN");
+
+        loadBtn.disabled = true;
+        rowsEl.innerHTML = "";
+        countText.textContent = "";
+        try {
+          const res = await fetch("/api/results", {
+            headers: { "x-teacher-pin": pin },
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "ดึงข้อมูลไม่สำเร็จ");
+
+          const submissions = data.submissions || [];
+          countText.textContent = `ทั้งหมด ${submissions.length} รายการ`;
+
+          rowsEl.innerHTML = submissions
+            .map((s, i) => {
+              const percent = Number(s.percent || 0).toFixed(2) + "%";
+              const scoreText = `${s.score} / ${s.totalPossible}`;
+              const submittedAt = String(s.submittedAt || "");
+              const studentId = String(s.studentId || "");
+              return `
+                <tr class="border-t border-slate-200">
+                  <td class="p-3">${i + 1}</td>
+                  <td class="p-3 font-medium">${esc(s.studentName)}</td>
+                  <td class="p-3">${esc(s.studentId)}</td>
+                  <td class="p-3">${esc(scoreText)}</td>
+                  <td class="p-3">${esc(percent)}</td>
+                  <td class="p-3 text-slate-600">${esc(new Date(s.submittedAt).toLocaleString())}</td>
+                  <td class="p-3">
+                    <button
+                      type="button"
+                      class="rounded border border-red-200 bg-red-50 hover:bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700"
+                      data-action="delete"
+                      data-submitted-at="${esc(submittedAt)}"
+                      data-student-id="${esc(studentId)}"
+                    >
+                      ลบ
+                    </button>
+                  </td>
+                </tr>`;
+            })
+            .join("");
+        } catch (err) {
+          setError(err.message || "เกิดข้อผิดพลาด");
+        } finally {
+          loadBtn.disabled = false;
+        }
+      }
+
+      async function deleteOne(submittedAt, studentId) {
+        clearError();
+        const pin = pinEl.value;
+        if (!pin) return setError("กรุณาใส่ PIN");
+        const ok = confirm("ต้องการลบผลสอบรายการนี้ใช่ไหม?");
+        if (!ok) return;
+
+        try {
+          const res = await fetch("/api/results/deleteOne", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-teacher-pin": pin },
+            body: JSON.stringify({ submittedAt, studentId }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "ลบไม่สำเร็จ");
+          await loadResults();
+        } catch (err) {
+          setError(err.message || "เกิดข้อผิดพลาด");
+        }
+      }
+
+      async function clearAll() {
+        clearError();
+        const pin = pinEl.value;
+        if (!pin) return setError("กรุณาใส่ PIN");
+        const ok = confirm("ต้องการเคลียร์คะแนนทั้งหมดใช่ไหม? (ลบถาวร)");
+        if (!ok) return;
+
+        clearAllBtn.disabled = true;
+        try {
+          const res = await fetch("/api/results/clearAll", {
+            method: "POST",
+            headers: { "x-teacher-pin": pin },
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "เคลียร์ไม่สำเร็จ");
+          await loadResults();
+        } catch (err) {
+          setError(err.message || "เกิดข้อผิดพลาด");
+        } finally {
+          clearAllBtn.disabled = false;
+        }
+      }
+
+      // event delegation for delete buttons
+      rowsEl.addEventListener("click", (e) => {
+        const btn = e.target?.closest?.("button[data-action='delete']");
+        if (!btn) return;
+        const submittedAt = btn.getAttribute("data-submitted-at");
+        const studentId = btn.getAttribute("data-student-id");
+        deleteOne(submittedAt, studentId);
+      });
+
+      loadBtn.addEventListener("click", loadResults);
+      clearAllBtn.addEventListener("click", clearAll);
+    </script>
+  </body>
+</html>
+
